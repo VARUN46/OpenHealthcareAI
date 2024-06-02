@@ -43,6 +43,26 @@ def splitFileText(text, size):
     return chunk
 
 
-def saveEmbeddings(embeddings):
+def saveEmbeddings(pdfPath):
+    text = convertPdfToText(pdfPath)
+    splitText = splitFileText(text, 200)
+    for text in splitText:
+        embedding = generateEmbeddingsOllama(text)
+        embeddingLen = range(len(embedding))
+
+        sqlInsertDocumentQuery = """
+            INSERT INTO public.document(docchunktext)
+	        VALUES (%s)
+	        RETURNING "Id"
+        """
+
+        sqlInsertVectorQuery = """
+            INSERT INTO public.document_vector(
+                document_id,
+                vector_position,
+                dimension)
+	        VALUES (%i, %i,%i)	
+        """
+
     pass    
 

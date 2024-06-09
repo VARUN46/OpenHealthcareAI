@@ -4,7 +4,7 @@ An open healthcare AI for all
 
 # Tech Stack
 
-Python, ReactJS, PostgresSQL
+Python, ReactJS, Maria DB
 
 # Middleware
 

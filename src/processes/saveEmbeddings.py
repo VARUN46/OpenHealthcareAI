@@ -3,7 +3,8 @@ import http.client
 import json
 import glob
 import PyPDF2
-
+import mariadb
+import os
 
 def generateEmbeddingsOllama(text):
     conn = http.client.HTTPConnection("localhost", 11434)
@@ -44,14 +45,39 @@ def splitFileText(text, size):
     return chunk
 
 
+def getConnection():
+    # Connect to MariaDB Platform
+    try:
+        conn = mariadb.connect(
+            user="root",
+            password = "",
+            host="127.0.0.1",
+            port=3306,
+            database="openhealthcareai"
+        )
+    except mariadb.Error as e:
+        print(f"Error connecting to MariaDB Platform: {e}")
+      
+    return conn
+
+
 def saveEmbeddings(pdfPath):
     pdftext = convertPdfToText(pdfPath)
     splitText = splitFileText(pdftext, 200)
-  
+    conn = getConnection()
+    cur = conn.cursor() 
+
     for text in splitText:
         embedding = generateEmbeddingsOllama(text)
-        embeddingLen = range(len(embedding))
+        embeddingjsontxt = json.dumps(embedding)
+        cur.execute("INSERT INTO document_vector (vector) VALUES (?) RETURNING id", [embeddingjsontxt]) 
+        for docid in cur: 
+            cur.execute("INSERT INTO document (document_vector_id,document_text) VALUES (?,?)", (docid[0],text))
+            
+        conn.commit()
 
+    conn.close()
+        
       
 
 

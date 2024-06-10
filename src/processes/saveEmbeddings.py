@@ -64,22 +64,20 @@ def getConnection():
 def saveEmbeddings(pdfPath):
     pdftext = convertPdfToText(pdfPath)
     splitText = splitFileText(pdftext, 200)
-    conn = getConnection()
-    cur = conn.cursor() 
-
+    
     for text in splitText:
+        conn = getConnection()
         embedding = generateEmbeddingsOllama(text)
         embeddingjsontxt = json.dumps(embedding)
-        cur.execute("INSERT INTO document_vector (vector) VALUES (?) RETURNING id", [embeddingjsontxt]) 
-        for docid in cur: 
-            cur.execute("INSERT INTO document (document_vector_id,document_text) VALUES (?,?)", (docid[0],text))
-            
+        cur = conn.cursor() 
+        cur.execute("INSERT INTO document_vector (vector) VALUES (?) RETURNING id", [embeddingjsontxt])
         conn.commit()
-
-    conn.close()
-        
-      
-
+        for docid in cur: 
+            cur = conn.cursor() 
+            cur.execute("INSERT INTO document (document_vector_id,document_text) VALUES (?,?)", (docid[0],text))    
+            conn.commit()
+        conn.close()
+ 
 
 
 files = readAllFilesInDir('datasource/')

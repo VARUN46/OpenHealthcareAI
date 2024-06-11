@@ -1,0 +1,6 @@
+DROP PROCEDURE IF EXISTS usp_getDocs;
+CREATE PROCEDURE usp_getDocs(@vector JSON)
+BEGIN
+    
+    SELECT 1
+END
